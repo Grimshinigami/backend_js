@@ -131,7 +131,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
     const thumbnailPath = req.file?.path
 
-    console.log(thumbnailPath);
+    // console.log(thumbnailPath);
     
 
     if(title.trim()==="" && description.trim()==="" && thumbnailPath===''){
@@ -153,11 +153,15 @@ const updateVideo = asyncHandler(async (req, res) => {
         video.description = description
     }
     if(thumbnailPath!==undefined){
-        const thumbnail = await uploadOnCloudinary(thumbnailPath) 
+        const thumbnail = await uploadOnCloudinary(thumbnailPath)
+
+        // console.log(thumbnail);      
 
         if(!thumbnail){
             throw new ApiError(401, "Error uploading thumbnail")
         }
+
+        // console.log(thumbnail)
 
         video.thumbnail = thumbnail?.url
 
@@ -181,13 +185,13 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Video not found")
     }
 
-    console.log(video);
+    // console.log(video);
     
     // throw new ApiError(500, "Internal Server Error")
 
     const deletedVideo = await deleteFromCloudinary(video.videoFile,'video')
 
-    console.log(deletedVideo);
+    // console.log(deletedVideo);
     
     if(!deletedVideo){
         throw new ApiError(500, "Error deleting video")
@@ -195,7 +199,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     
     const deletedThumbnail = await deleteFromCloudinary(video.thumbnail)
 
-    console.log(deletedThumbnail);
+    // console.log(deletedThumbnail);
     
     if(!deletedThumbnail){
         throw new ApiError(500, "Error deleting thumbnail")
@@ -203,7 +207,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
     const deletedObj = await Video.findByIdAndDelete(videoId);
 
-    console.log(deletedObj)
+    // console.log(deletedObj)
 
     if(!deletedObj){
         throw new ApiError(500, "Error in deleting Video")
