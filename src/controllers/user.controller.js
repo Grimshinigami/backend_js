@@ -1,7 +1,7 @@
 import {asyncHandler} from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
 import {User} from '../models/user.model.js'
-import { uploadOnCloudinary } from '../utils/cloudinary.js'
+import { uploadOnCloudinary, deleteFromCloudinary} from '../utils/cloudinary.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import jwt from "jsonwebtoken";
 import fs from 'fs';
@@ -288,11 +288,28 @@ const updateUserAvatar = asyncHandler( async(req, res) => {
         throw new ApiError(400, "Avatar file is missing ")
     }
 
+    const currentAvatarUrl = await User.findById(req.user?._id).select("avatar")
+
+    // console.log(currentAvatarUrl)
+
+    if(!currentAvatarUrl){
+        throw new ApiError(501,"No avatar found")
+    }
+
+    const deletedResponse = await deleteFromCloudinary(currentAvatarUrl.avatar)
+
+    // console.log(deletedResponse)
+
+    if(!deletedResponse){
+        throw new ApiError(501, "Couldn't delete previous avatar image")
+    }
+
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
     if(!avatar.url){
         throw new ApiError(400, "Error in uploading avatar")
     }
+
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
@@ -315,6 +332,22 @@ const updateUserCoverImage = asyncHandler( async(req, res) => {
 
     if(!coverLocalPath){
         throw new ApiError(400, "Cover file is missing ")
+    }
+
+    const currentCoverUrl = await User.findById(req.user?._id).select("coverImage")
+
+    // console.log(currentAvatarUrl)
+
+    if(!currentCoverUrl){
+        throw new ApiError(501,"No coverImage found")
+    }
+
+    const deletedResponse = await deleteFromCloudinary(currentCoverUrl.coverImage)
+
+    // console.log(deletedResponse)
+
+    if(!deletedResponse){
+        throw new ApiError(501, "Couldn't delete previous cover image")
     }
 
     const cover = await uploadOnCloudinary(coverLocalPath)
