@@ -153,16 +153,11 @@ const updateVideo = asyncHandler(async (req, res) => {
         video.description = description
     }
     if(thumbnailPath!==undefined){
-        const thumbnail = await uploadOnCloudinary(thumbnailPath)
-
-        // console.log(thumbnail);
-        
+        const thumbnail = await uploadOnCloudinary(thumbnailPath) 
 
         if(!thumbnail){
             throw new ApiError(401, "Error uploading thumbnail")
         }
-
-        // console.log(thumbnail)
 
         video.thumbnail = thumbnail?.url
 
