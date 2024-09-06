@@ -56,11 +56,73 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const {channelId} = req.params
+
+    const {page=1, limit=10,} = req.query
+
+    if(!channelId){
+        throw new ApiError(400, "ChannelId is required")
+    }
+
+    const subscribers = Subscription.aggregate([
+        {
+          $match:
+            {
+              channel: new mongoose.Types.ObjectId(channelId),
+            },
+        },
+    ])
+
+    const options = {
+        page,
+        limit,
+    }
+
+    const response = await subscribers.paginateExec(options)
+
+    if(!response){
+        throw new ApiError(400,"Channel not found")
+    }
+
+    // console.log(response);
+    
+
+    return res
+            .status(200)
+            .json(new ApiResponse(200, response.docs, "Subscribers for the channel"))
+
 })
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
-    const { subscriberId } = req.params
+
+    const {page=1, limit=10,} = req.query
+
+    const options = {
+        page,
+        limit,
+    }
+
+    const channels = Subscription.aggregate([
+        {
+          $match:
+            {
+              subscriber: new mongoose.Types.ObjectId(req.user?._id),
+            },
+        },
+    ])
+
+    const response = await channels.paginateExec(options)
+
+    if(!response){
+        throw new ApiError(500,"Something went wrong")
+    }
+
+    // console.log(response);
+    
+    return res
+            .status(200)
+            .json(new ApiResponse(200, response.docs, "Channels user is subscribed to"))
+
 })
 
 export {
