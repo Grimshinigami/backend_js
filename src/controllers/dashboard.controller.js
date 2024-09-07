@@ -37,7 +37,8 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
     // console.log(VideoStats);
 
-    const allLikes = await Like.aggregate([
+
+    const allLikes = (VideoStats.length!==0)?await Like.aggregate([
       {
         $match: {
           video: {
@@ -48,7 +49,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
       {
         $count: "allVideoLikes",
       },
-    ])
+    ]):[]
 
     if(!allLikes){
       throw new ApiError(500, "Error finding likes")
@@ -71,7 +72,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
       throw new ApiError(500, "Error in fetching subscribers")
     }
 
-    console.log(subscribers);
+    // console.log(subscribers);
 
     // throw new ApiError(500, "Server testing going")
 
