@@ -1,10 +1,12 @@
 import mongoose, {isValidObjectId} from "mongoose"
 import {Video} from "../models/video.model.js"
 import {User} from "../models/user.model.js"
+import {Comment} from "../models/comment.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {deleteFromCloudinary, uploadOnCloudinary} from "../utils/cloudinary.js"
+import { Like } from "../models/like.model.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -197,12 +199,27 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Error deleting video")
     }
     
-    const deletedThumbnail = await deleteFromCloudinary(video.thumbnail)
+    if(video.thumbnail!==""){
 
-    // console.log(deletedThumbnail);
-    
-    if(!deletedThumbnail){
-        throw new ApiError(500, "Error deleting thumbnail")
+        const deletedThumbnail = await deleteFromCloudinary(video.thumbnail)
+
+        // console.log(deletedThumbnail);
+        
+        if(!deletedThumbnail){
+            throw new ApiError(500, "Error deleting thumbnail")
+        }
+    }
+
+    const deletedLikes = await Like.deleteMany({video:videoId})
+
+    if(!deletedLikes){
+        throw new ApiError(500, "Error in deleting likes on video")
+    }
+
+    const deletedComments = await Comment.deleteMany({video: videoId})
+
+    if(!deletedComments){
+        throw new ApiError(500, "Error in deleting comments on video")
     }
 
     const deletedObj = await Video.findByIdAndDelete(videoId);
